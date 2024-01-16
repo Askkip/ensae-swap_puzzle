@@ -3,6 +3,7 @@ This is the grid module. It contains the Grid class and its associated methods.
 """
 
 import random
+import numpy as np
 
 class Grid():
     """
@@ -55,10 +56,10 @@ class Grid():
 
     def is_sorted(self):
         """
-        Checks is the current state of the grid is sorte and returns the answer as a boolean.
+        Checks if the current state of the grid is sorted and returns the answer as a boolean.
         """
-        # TODO: implement this function (and remove the line "raise NotImplementedError").
-        raise NotImplementedError
+        sorted_grid = [list(range(i*self.n+1, (i+1)*self.n+1)) for i in range(self.m)]
+        return np.array_equal(sorted_grid,self.state)
 
     def swap(self, cell1, cell2):
         """
@@ -69,8 +70,16 @@ class Grid():
         cell1, cell2: tuple[int]
             The two cells to swap. They must be in the format (i, j) where i is the line and j the column number of the cell. 
         """
-        # TODO: implement this function (and remove the line "raise NotImplementedError").
-        raise NotImplementedError
+        i1,j1 = cell1
+        i2,j2=cell2
+        #Check if the swap is permitted
+        if not ((i1==i2 and abs(j2-j1)==1) or (j1==j2 and abs(i2-i1)==1)):
+            raise ValueError("The swap is not permitted")
+        
+        tmp = self.state[i1][j1]
+        self.state[i1][j1] = self.state[i2][j2]
+        self.state[i2][j2] = tmp
+        
 
     def swap_seq(self, cell_pair_list):
         """
@@ -82,8 +91,8 @@ class Grid():
             List of swaps, each swap being a tuple of two cells (each cell being a tuple of integers). 
             So the format should be [((i1, j1), (i2, j2)), ((i1', j1'), (i2', j2')), ...].
         """
-        # TODO: implement this function (and remove the line "raise NotImplementedError").
-        raise NotImplementedError
+        for (cell1,cell2) in cell_pair_list:
+            self.swap(cell1,cell2)
 
     @classmethod
     def grid_from_file(cls, file_name): 
@@ -113,4 +122,22 @@ class Grid():
             grid = Grid(m, n, initial_state)
         return grid
 
+
+def test_swap():
+    g = Grid(2,3)
+    print(g)
+    g.swap((0,0),(0,1))
+    print(g)
+    g.swap((0,2),(0,1))
+    print(g)
+    #g.swap((0,3),(0,1))#not permitted
+    g1 = Grid(2,3)
+    g1.swap_seq([((0,0),(0,1)),((0,2),(0,1))])
+    assert(np.array_equal(g1.state,g.state))
+
+if __name__ == '__main__':
+    #g = Grid(2,3)
+    #print(g)
+    #test_swap()
+    pass
 
