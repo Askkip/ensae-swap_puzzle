@@ -10,7 +10,7 @@ directions = [UP,DOWN,RIGHT,LEFT]
 
 class Solver(): 
     """
-    A solver class, to be implemented.
+    We decided that each solver has his initial grid 
     """
     def __init__(self,grid) -> None:
         self.grid = grid
@@ -61,6 +61,7 @@ class Solver():
         Using a randomize method 
         Solves the grid and returns the sequence of swaps at the format 
         [((i1, j1), (i2, j2)), ((i1', j1'), (i2', j2')), ...]. 
+
         """
         acc =[]
         while not self.grid.is_sorted():
@@ -75,6 +76,7 @@ class Solver():
         """
         Place x to his right position without moving the element 1,2....x-1
         that are supposed to be in their final place
+        Side effect : order the grid associate to the Solver
         Output : moves that have been made  [((i1, j1), (i2, j2)), ((i1', j1'), (i2', j2')), ...]. 
         """
         grid_ordered = Grid(self.grid.m,self.grid.n)
@@ -108,14 +110,9 @@ class Solver():
             actual_place = next_place
 
         return moves_done
-
+    #Complexité de cette fonction en O(mn) car au pire des cas mn opérations en 0(1) même si en pratique c'est beaucoup moins ça serait plus max(n,m) opérations en moyenne
 
             
-
-
-
-
-
     def get_solution_naive(self):
         """
         Move each number in its right place by treating them in ascending order
@@ -126,9 +123,10 @@ class Solver():
         moves =[]
         max_number = self.grid.n*self.grid.m
         for i in range(1,max_number+1):
-            print(f"on move {i} à sa bonne place ")
+            #print(f"on move {i} à sa bonne place ")
             moves = moves + self.place(i)
         return moves
+    #Complexité en O(mn^2) et en moyenne en O(mn*max(n,m))
 
 
 
@@ -160,42 +158,29 @@ if __name__ == '__main__':
     # print(res1)
     # g1.swap_seq(res1)
     # print(g1)
-    grid1 = Grid.grid_from_file("input/grid1.in")
-    grid2= Grid.grid_from_file("input/grid2.in")
-    grid3= Grid.grid_from_file("input/grid3.in")
-    solv1= Solver(grid1)
-    solv2 = Solver(grid2)
-    solv3=Solver(grid3)
-    res1= solv1.get_solution_naive()
-    res2= solv2.get_solution_naive()
-    res3= solv3.get_solution_naive()
+    # grid1 = Grid.grid_from_file("input/grid1.in")
+    # grid2= Grid.grid_from_file("input/grid2.in")
+    # grid3= Grid.grid_from_file("input/grid3.in")
+    # solv1= Solver(grid1)
+    # solv2 = Solver(grid2)
+    # solv3=Solver(grid3)
+    # res1= solv1.get_solution_naive()
+    # res2= solv2.get_solution_naive()
+    # res3= solv3.get_solution_naive()
 
 
         
-    grid1.swap_seq(res1)
-    grid2.swap_seq(res2)
-    grid3.swap_seq(res3)
-    solv1.place(7)
-    print(grid1)
-    print(grid2)
-    print(grid3)
+    # grid1.swap_seq(res1)
+    # grid2.swap_seq(res2)
+    # grid3.swap_seq(res3)
+    # solv1.place(7)
+    # print(grid1)
+    # print(grid2)
+    # print(grid3)
+    pass
 
 
-    gg = Grid(4,4,[[5, 2, 7, 4]
-,[1, 6, 3, 8]
-,[9, 14, 15, 12]
-,[13, 10, 11, 16]])    
-    print(gg)
-    s = Solver(gg)
-    s.place(1)
-    s.place(2)
-    s.place(3)
-    s.place(4)
-    s.place(10)
-    s.place(11)
-    s.place(11)
-    s.place(14)
-    print(s.grid)
+
 
 
 
