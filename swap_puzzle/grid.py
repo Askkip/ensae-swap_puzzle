@@ -5,6 +5,11 @@ This is the grid module. It contains the Grid class and its associated methods.
 import random
 import numpy as np
 import copy
+import pygame as pg
+
+BLOCK_SIZE = 200
+BLACK = (0,0,0)
+WHITE = (255, 255, 255)
 
 class Grid():
     """
@@ -122,6 +127,36 @@ class Grid():
                 initial_state[i_line] = line_state
             grid = Grid(m, n, initial_state)
         return grid
+    
+    def ui_building(self):
+        """
+        Create a display of the grid with pygame
+
+        """
+        self.display = pg.display.set_mode((self.n*BLOCK_SIZE,self.m*BLOCK_SIZE))
+        self.display.fill(WHITE)
+        pg.display.set_caption("Swap Puzzle")
+        font = pg.font.Font('arial.ttf', 25)
+        for list in self.state:
+            for x in list:
+                left = self.state.index(list)*BLOCK_SIZE
+                top = list.index(x)*BLOCK_SIZE
+                #print(f"On place {x} dans le carré de top {top} et left {left}")
+                pg.draw.rect(self.display,BLACK,pg.Rect(top,left,BLOCK_SIZE,BLOCK_SIZE),5) 
+                mid_top = top + (BLOCK_SIZE)/2
+                mid_left = left +(BLOCK_SIZE)/2
+                #print(f"On place {x} dans mid_top {mid_top} et mid_left {mid_left}")
+                text = font.render(str(x),True, BLACK)
+                self.display.blit(text,(mid_top,mid_left))
+        pg.display.flip()
+        while True :
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    exit()
+
+
+    
+    
 
 
 def test_swap():
@@ -137,8 +172,12 @@ def test_swap():
     assert(np.array_equal(g1.state,g.state))
 
 if __name__ == '__main__':
-    #g = Grid(2,3)
-    #print(g)
+    pg.init()
+    g = Grid(2,3)
+    print(g)
+    print(g.state)
+    g.ui_building()
+                    
     #test_swap()
     g1 = Grid(2,3)
     g2 = Grid(2,3)

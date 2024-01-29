@@ -10,7 +10,7 @@ directions = [UP,DOWN,RIGHT,LEFT]
 
 class Solver(): 
     """
-    A solver class, to be implemented.
+    We decided that each solver has his initial grid 
     """
     def __init__(self,grid) -> None:
         self.grid = grid
@@ -21,22 +21,28 @@ class Solver():
         i1,j1 = x
         i2,j2 =y
         return 0<=i1<self.grid.m and 0<=j1<self.grid.n and 0<=i2<self.grid.m and 0<=j2<self.grid.n and ((i1==i2 and abs(j2-j1)==1) or (j1==j2 and abs(i2-i1)==1))
+    
     @staticmethod
     def sum_term_tuple(x,y):
         return (x[0]+y[0],x[1]+y[1])
 
+    @staticmethod
+    def find_place(mat,elt):
+        for i, rows in enumerate(mat):
+            if elt in rows:
+                return i, rows.index(elt)
+
+        return None
+
     
-    def possible_moves(self,grid):
+    def possible_moves(self):
         """
         Return all possible_moves from a state
         Warning : each move apperas twice
+        To each state we have (4*2 + 2*(m-2)*3 + 2*(n-2)*3 + 4*(m-2)(n-2))/2 swaps possibles 
         Output : [((i1, j1), (i2, j2)), ((i1', j1'), (i2', j2')),.....]
         """
         possible_moves = []
-        #n = grid.n
-        #m = grid.m
-        #we add the four corners
-        #possible_moves += [((0,0),(0,1)),((0,0),(1,0)),((0,n-1),(0,n-2)),((0,n-1),(1,n-1)),((m-1,0),(m-1,1)),((m-1,0),(m-2,0)),((m-1,n-1),(m-1,n-2)),((m-1,n-1),(m-2,n-1))]
         
         for i in range(0,self.grid.m):
             for j in range(0,self.grid.n):
@@ -51,6 +57,12 @@ class Solver():
         return possible_moves
 
     def get_solution_naive_random(self):
+        """
+        Using a randomize method 
+        Solves the grid and returns the sequence of swaps at the format 
+        [((i1, j1), (i2, j2)), ((i1', j1'), (i2', j2')), ...]. 
+
+        """
         acc =[]
         while not self.grid.is_sorted():
             moves_possible = self.possible_moves()
@@ -60,55 +72,117 @@ class Solver():
         return acc
 
 
+    def place(self,x):
+        """
+        Place x to his right position without moving the element 1,2....x-1
+        that are supposed to be in their final place
+        Side effect : order the grid associate to the Solver
+        Output : moves that have been made  [((i1, j1), (i2, j2)), ((i1', j1'), (i2', j2')), ...]. 
+        """
+        grid_ordered = Grid(self.grid.m,self.grid.n)
+        right_place = Solver.find_place(grid_ordered.state,x)
+        actual_place = Solver.find_place(self.grid.state,x)
+        moves_done =[]
+        i_a,j_a = actual_place
+        i_r,j_r = right_place
+        moves_to_do =[]
+        if i_a>i_r:
+            moves_to_do.append(UP)
+        if i_a<i_r:
+            moves_to_do.append(DOWN)
+        if j_a<j_r:
+            moves_to_do.append(RIGHT)
+        if j_a>j_r:
+            moves_to_do.append(LEFT)
 
+        
+        while actual_place != right_place :
+            idx = 0 #keep it between 0 and len(moves_to_do)
+            next_place = Solver.sum_term_tuple(actual_place,moves_to_do[idx])
+            i,j = next_place
+            if self.grid.state[i][j] < x : #if in the emplacement there is an already placed numbers, use an other direction
+                idx = (idx +1)%len(moves_to_do)
+                next_place = Solver.sum_term_tuple(actual_place,moves_to_do[idx])
+                i,j = next_place
+
+            self.grid.swap(actual_place,next_place)
+            moves_done.append((actual_place,next_place))
+            actual_place = next_place
+
+        return moves_done
+    #Complexité de cette fonction en O(mn) car au pire des cas mn opérations en 0(1) même si en pratique c'est beaucoup moins ça serait plus max(n,m) opérations en moyenne
+
+            
     def get_solution_naive(self):
         """
-        We are gonna enumerate all the sequences of possible swaps
-        To each state we have (4*2 + 2*(m-2)*3 + 2*(n-2)*3 + 4*(m-2)(n-2))/2 swaps possibles 
+        Move each number in its right place by treating them in ascending order
 
         Solves the grid and returns the sequence of swaps at the format 
         [((i1, j1), (i2, j2)), ((i1', j1'), (i2', j2')), ...]. 
         """
-        def aux(grid,acc,nb_coup): #acc = accumulation of moves do since the beginning
-            if grid.is_sorted():
-                return acc
-            if nb_coup > 100:
-                return
-            l = self.possible_moves(grid)
-            for move in l:
-                x,y = move
-                new_g = Grid(grid.m,grid.n,copy.deepcopy(grid.state))
-                new_g.swap(x,y)
-                aux(new_g,acc+[move],nb_coup+1)
+        moves =[]
+        max_number = self.grid.n*self.grid.m
+        for i in range(1,max_number+1):
+            #print(f"on move {i} à sa bonne place ")
+            moves = moves + self.place(i)
+        return moves
+    #Complexité en O(mn^2) et en moyenne en O(mn*max(n,m))
 
-        aux(self.grid,[],0)
-            
 
 
 
 if __name__ == '__main__':
-    g = Grid(2,3)
-    g.swap((0,0),(0,1))
-    g.swap((0,0),(1,0))
-    print(g)
-    g1 = Grid(2,3)
-    g1.swap((0,0),(0,1))
-    g1.swap((0,0),(1,0))
-    g2 = Grid.grid_from_file("input/grid1.in")
-    g3 = Grid.grid_from_file("input/grid2.in")
-    solv = Solver(g)
-    #l=solv.possible_moves()
-    #print(f"moove possible =  {l}")
-    #solv2 = Solver(g2)
-    #solv3=Solver(g3)
-    #l2 = solv2.get_solution_naive_random()
-    #l3 = solv3.get_solution_naive_random()
-    #res = solv.get_solution_naive_random()
-    #print(len(l2),len(l3),len(res))
-    #g1.swap_seq(res)
-    #print(g1)
-    res = solv.get_solution_naive()
-    print(res)
+    # g = Grid(2,3)
+    # g.swap((0,0),(0,1))
+    # g.swap((0,0),(1,0))
+    # print(g)
+    # g1 = Grid(2,3)
+    # g1.swap((0,0),(0,1))
+    # g1.swap((0,0),(1,0))
+    # g2 = Grid.grid_from_file("input/grid1.in")
+    # g3 = Grid.grid_from_file("input/grid2.in")
+    # solv = Solver(g)
+    # #l=solv.possible_moves()
+    # #print(f"moove possible =  {l}")
+    # #solv2 = Solver(g2)
+    # #solv3=Solver(g3)
+    # #l2 = solv2.get_solution_naive_random()
+    # #l3 = solv3.get_solution_naive_random()
+    # #res = solv.get_solution_naive_random()
+    # #print(len(l2),len(l3),len(res))
+    # #g1.swap_seq(res)
+    # #print(g1)
+    # #res = solv.get_solution_naive()
+    # #print(res)
+    # res1 = solv.get_solution_naive()
+    # print(res1)
+    # g1.swap_seq(res1)
+    # print(g1)
+    # grid1 = Grid.grid_from_file("input/grid1.in")
+    # grid2= Grid.grid_from_file("input/grid2.in")
+    # grid3= Grid.grid_from_file("input/grid3.in")
+    # solv1= Solver(grid1)
+    # solv2 = Solver(grid2)
+    # solv3=Solver(grid3)
+    # res1= solv1.get_solution_naive()
+    # res2= solv2.get_solution_naive()
+    # res3= solv3.get_solution_naive()
+
+
+        
+    # grid1.swap_seq(res1)
+    # grid2.swap_seq(res2)
+    # grid3.swap_seq(res3)
+    # solv1.place(7)
+    # print(grid1)
+    # print(grid2)
+    # print(grid3)
+    pass
+
+
+
+
+
 
         
 
