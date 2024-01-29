@@ -4,6 +4,7 @@ This is the grid module. It contains the Grid class and its associated methods.
 
 import random
 import numpy as np
+import copy
 
 class Grid():
     """
@@ -139,5 +140,10 @@ if __name__ == '__main__':
     #g = Grid(2,3)
     #print(g)
     #test_swap()
-    pass
+    g1 = Grid(2,3)
+    g2 = Grid(2,3)
+    g2.state = g1.state
+    g1.swap_seq([((0,0),(0,1)),((0,2),(0,1))])
+    print(g1)
+    print(g2)
 
