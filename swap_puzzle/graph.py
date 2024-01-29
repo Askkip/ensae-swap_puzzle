@@ -1,6 +1,9 @@
+from queue import Queue
+
 """
 This is the graph module. It contains a minimalistic Graph class.
 """
+
 
 class Graph:
     """
@@ -67,19 +70,35 @@ class Graph:
         node2: NodeType
             Second end (node) of the edge
         """
-        if node1 not in self.graph:
-            self.graph[node1] = []
-            self.nb_nodes += 1
-            self.nodes.append(node1)
-        if node2 not in self.graph:
-            self.graph[node2] = []
-            self.nb_nodes += 1
-            self.nodes.append(node2)
+        if not ((node1,node2) in self.edges or (node2,node1) in self.edges) : 
+            if node1 not in self.graph:
+                self.graph[node1] = []
+                self.nb_nodes += 1
+                self.nodes.append(node1)
+            if node2 not in self.graph:
+                self.graph[node2] = []
+                self.nb_nodes += 1
+                self.nodes.append(node2)
 
-        self.graph[node1].append(node2)
-        self.graph[node2].append(node1)
-        self.nb_edges += 1
-        self.edges.append((node1, node2))
+            self.graph[node1].append(node2)
+            self.graph[node2].append(node1)
+            self.nb_edges += 1
+            self.edges.append((node1, node2))
+
+    # def bijection(self):
+    #     int_list = list(range(0,self.nb_nodes))
+    #     not_int = False
+    #     for elt in self.nodes:
+    #         if type(elt) != int:
+    #             not_int = True
+    #     if not_int:
+    #         bijection = {}
+    #         for elt in self.nodes:
+    #             bijection[elt] = self.nodes.index(elt)
+    #             self.nodes[elt]
+
+
+
 
     def bfs(self, src, dst): 
         """
@@ -97,8 +116,39 @@ class Graph:
         path: list[NodeType] | None
             The shortest path from src to dst. Returns None if dst is not reachable from src
         """ 
-        # TODO: implement this function (and remove the line "raise NotImplementedError").
-        raise NotImplementedError
+        queue = Queue()
+        seen = [False for _ in range(0,self.nb_nodes)]
+        distance = [float("inf") for _ in range(0,self.nb_nodes)]
+        predecessors = [-1 for _ in range(0,self.nb_nodes)]
+        #there is a bijection between [0....nb_nodes] and [self.node[0] ... self.nodes[nb_nodes]]
+        #initialization
+        distance[self.nodes.index(src)]  = 0
+        queue.put(src)
+        seen[self.nodes.index(src)]  = True
+
+        while not queue.empty():
+            elt = queue.get()
+            idx_elt = self.nodes.index(elt)
+            for neighbor in self.graph[elt]:
+                idx_neigh = self.nodes.index(neighbor)
+                if not seen[idx_neigh] :
+                    queue.put(neighbor)
+                    seen[idx_neigh] = True
+                    distance[idx_neigh] = distance[idx_elt]+1
+                    predecessors[idx_neigh] = elt
+                if neighbor == dst:
+                    path = [dst]
+                    idx_dst = self.nodes.index(dst)
+                    x = predecessors[idx_dst]
+                    while x != src :
+                        path.append(x)
+                        x = predecessors[self.nodes.index(x)]
+                    path.append(x)
+                    path.reverse()
+                    return path
+        return None
+
+
 
     @classmethod
     def graph_from_file(cls, file_name):
@@ -131,4 +181,20 @@ class Graph:
                 else:
                     raise Exception("Format incorrect")
         return graph
+    
+if __name__ == '__main__':
+    # g = Graph()
+    # g.add_edge("f","e")
+    # g.add_edge("f","e")
+    # g.add_edge("f","a")
+    # g.add_edge("e",'a')
+    # g.add_edge("a","x")
+    # g.add_edge("y","x")
+    # print(g)
+    # print(g.graph)
+    # print(g.nodes)
+    # print(g.edges)
+    # print(g.bfs("f","y"))
+    pass
+
 

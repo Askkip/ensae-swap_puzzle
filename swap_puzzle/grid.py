@@ -128,6 +128,12 @@ class Grid():
             grid = Grid(m, n, initial_state)
         return grid
     
+    def hashable_state(self):
+        """
+        Return a non mutable (hashable) representation of the grid in order to stock it as a node
+        """
+        return tuple([tuple(inner_list) for inner_list in self.state])
+    
     def ui_building(self):
         """
         Create a display of the grid with pygame
@@ -155,9 +161,6 @@ class Grid():
                     exit()
 
 
-    
-    
-
 
 def test_swap():
     g = Grid(2,3)
@@ -172,17 +175,19 @@ def test_swap():
     assert(np.array_equal(g1.state,g.state))
 
 if __name__ == '__main__':
-    pg.init()
+    # pg.init()
     g = Grid(2,3)
     print(g)
     print(g.state)
-    g.ui_building()
+    print(g.hashable_state())
+    # g.ui_building()
                     
-    #test_swap()
-    g1 = Grid(2,3)
-    g2 = Grid(2,3)
-    g2.state = g1.state
-    g1.swap_seq([((0,0),(0,1)),((0,2),(0,1))])
-    print(g1)
-    print(g2)
+    # #test_swap()
+    # g1 = Grid(2,3)
+    # g2 = Grid(2,3)
+    # g2.state = g1.state
+    # g1.swap_seq([((0,0),(0,1)),((0,2),(0,1))])
+    # print(g1)
+    # print(g2)
+
 

@@ -1,4 +1,5 @@
 from grid import Grid
+from graph import Graph
 import copy
 import random
 
@@ -38,7 +39,7 @@ class Solver():
     def possible_moves(self):
         """
         Return all possible_moves from a state
-        Warning : each move apperas twice
+        Warning : each move appears twice
         To each state we have (4*2 + 2*(m-2)*3 + 2*(n-2)*3 + 4*(m-2)(n-2))/2 swaps possibles 
         Output : [((i1, j1), (i2, j2)), ((i1', j1'), (i2', j2')),.....]
         """
@@ -128,20 +129,47 @@ class Solver():
         return moves
     #Complexité en O(mn^2) et en moyenne en O(mn*max(n,m))
 
+    def build_graph(self):
+        """
+        Build a graph where each node is a state of the grid and there is an edge between 2 nodes
+        if and only if u can go from a state to another with a legal swap
+        Output : Graph object
+        """
+        g = Graph()
+
+        def aux(grid_state):
+            self.grid.state = grid_state 
+            non_mutable_state = self.grid.hashable_state()
+            possibles_moves = self.possible_moves()
+            for cell1,cell2 in possibles_moves:
+                self.grid.swap(cell1,cell2) 
+                non_mutable_new_state = self.grid.hashable_state()
+                g.add_edge(non_mutable_state,non_mutable_new_state)
+                aux(g)
+                self.grid.swap(cell1,cell2) #put back the changement
+                
+        aux(self.grid.state)
+        return g
+
+
+
+
 
 
 
 if __name__ == '__main__':
-    # g = Grid(2,3)
-    # g.swap((0,0),(0,1))
-    # g.swap((0,0),(1,0))
-    # print(g)
+    g = Grid(2,3)
+    g.swap((0,0),(0,1))
+    g.swap((0,0),(1,0))
+    print(g)
     # g1 = Grid(2,3)
     # g1.swap((0,0),(0,1))
     # g1.swap((0,0),(1,0))
     # g2 = Grid.grid_from_file("input/grid1.in")
     # g3 = Grid.grid_from_file("input/grid2.in")
-    # solv = Solver(g)
+    solv = Solver(g)
+    graph = solv.build_graph()
+    print(graph)
     # #l=solv.possible_moves()
     # #print(f"moove possible =  {l}")
     # #solv2 = Solver(g2)
