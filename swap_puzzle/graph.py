@@ -85,20 +85,6 @@ class Graph:
             self.nb_edges += 1
             self.edges.append((node1, node2))
 
-    # def bijection(self):
-    #     int_list = list(range(0,self.nb_nodes))
-    #     not_int = False
-    #     for elt in self.nodes:
-    #         if type(elt) != int:
-    #             not_int = True
-    #     if not_int:
-    #         bijection = {}
-    #         for elt in self.nodes:
-    #             bijection[elt] = self.nodes.index(elt)
-    #             self.nodes[elt]
-
-
-
 
     def bfs(self, src, dst): 
         """

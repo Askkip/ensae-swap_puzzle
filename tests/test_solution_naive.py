@@ -18,7 +18,7 @@ class Test_SolutionNaive(unittest.TestCase):
         res2= solv2.get_solution_naive()
         res3= solv3.get_solution_naive()
         # print(solv1.grid)
-        # print(solv2.grid)
+        #print(solv2.grid)
         # print(solv3.grid)
         self.assertEqual(grid1.is_sorted(), True)
         self.assertEqual(grid2.is_sorted(), True)

@@ -3,8 +3,9 @@ from graph import Graph
 import copy
 import random
 import sys
+import numpy as np
 
-#sys.setrecursionlimit(50000)
+sys.setrecursionlimit(5000)
 
 UP = (-1,0)
 DOWN =(1,0)
@@ -37,12 +38,30 @@ class Solver():
                 return i, rows.index(elt)
 
         return None
+    
+    @staticmethod
+    def move_needed(state1,state2):
+        """
+        Giving 2 grid that differs from one swap, find the swap they have in common
+        """
+        state1l = [list(inner_tuple) for inner_tuple in state1]
+        state2l = [list(inner_tuple) for inner_tuple in state2]
+        g1 = Grid(len(state1),len(state1[0]),state1l)
+        g2 = Grid(len(state2),len(state2[0]),state2l)
+        solv = Solver(g1)
+        possible_moves = solv.possible_moves()
+        for cell1,cell2 in possible_moves:
+            g1.swap(cell1,cell2)
+            if np.array_equal(g1.state,g2.state):
+                return (cell1,cell2)
+            g1.swap(cell1,cell2)
+        raise Exception(f"The 2 grids differs from more than 1 swap {state1} and {state2}")
 
     
     def possible_moves(self):
         """
         Return all possible_moves from a state
-        Warning : each move appears twice
+        
         To each state we have (4*2 + 2*(m-2)*3 + 2*(n-2)*3 + 4*(m-2)(n-2))/2 swaps possibles 
         Output : [((i1, j1), (i2, j2)), ((i1', j1'), (i2', j2')),.....]
         """
@@ -55,7 +74,7 @@ class Solver():
                 move_close_to_x = [Solver.sum_term_tuple(x,y) for y in directions]
                 #print(move_close_to_x)
                 for t in move_close_to_x:
-                    if self.legal_move(x,t):
+                    if self.legal_move(x,t) and (t,x) not in possible_moves:
                         #print(f"On append {(x,t)}")
                         possible_moves.append((x,t))
         return possible_moves
@@ -139,26 +158,48 @@ class Solver():
         Output : Graph object
         """
         g = Graph()
+        possibles_moves = self.possible_moves()
+        memory = copy.deepcopy(self.grid.state) #Remember the state for putting back the state of the grid at the end of the function
 
-        def aux(grid_state,k):
-            if k > 5:
-                return
-            self.grid.state = grid_state 
+        for swap1,swap2 in possibles_moves :
             non_mutable_state = self.grid.hashable_state()
-            possibles_moves = self.possible_moves()
             for cell1,cell2 in possibles_moves:
-                self.grid.swap(cell1,cell2) 
+                self.grid.swap(cell1,cell2)
                 non_mutable_new_state = self.grid.hashable_state()
-                g.add_edge(non_mutable_state,non_mutable_new_state)
-                aux(self.grid.state,k+1)
+                if (non_mutable_state,non_mutable_new_state) not in g.edges or (non_mutable_new_state,non_mutable_state) not in g.edges: 
+                        g.add_edge(non_mutable_state,non_mutable_new_state)
                 self.grid.swap(cell1,cell2) #put back the changement
-                
-        aux(self.grid.state,0)
-        return g
 
+            self.grid.swap(swap1,swap2)
+            non_mutable_state = self.grid.hashable_state()
+        
+        self.grid.state = memory
+        return g 
 
-
-
+    def get_solution_graphe(self):
+        """
+        Find the shortest path in the state graph built previously
+        Solves the grid and returns the sequence of swaps at the format 
+        [((i1, j1), (i2, j2)), ((i1', j1'), (i2', j2')), ...]. 
+        """
+        #print(self.grid)
+        g = self.build_graph()
+        src = self.grid.hashable_state()
+        #print(src)
+        goal = Grid(self.grid.m,self.grid.n)
+        dst = goal.hashable_state()
+        state_path = g.bfs(src,dst)
+        #print(f"state_path = {state_path}") 
+        if state_path == None :
+            return None
+        #we have the list of the different state we need to follow to order the grid
+        #but we want the sequence of swaps, so we are gonna extrat the list of the swap neccessary
+        path = []
+        for i in range(0,len(state_path)-1):
+            state1,state2 = state_path[i],state_path[i+1]
+            move_needed = Solver.move_needed(state1,state2)
+            path.append(move_needed)
+        return path
 
 
 
@@ -167,16 +208,18 @@ if __name__ == '__main__':
     g.swap((0,0),(0,1))
     g.swap((0,0),(1,0))
     print(g)
+    #print(g.hashable_state())
     # g1 = Grid(2,3)
     # g1.swap((0,0),(0,1))
     # g1.swap((0,0),(1,0))
     # g2 = Grid.grid_from_file("input/grid1.in")
     # g3 = Grid.grid_from_file("input/grid2.in")
     solv = Solver(g)
-    graph = solv.build_graph()
-    print(graph)
-    # #l=solv.possible_moves()
-    # #print(f"moove possible =  {l}")
+    #graph = solv.build_graph()
+    #print(graph.edges)
+    print(solv.get_solution_graphe())
+    # l=solv.possible_moves()
+    # print(f"moove possible =  {l}")
     # #solv2 = Solver(g2)
     # #solv3=Solver(g3)
     # #l2 = solv2.get_solution_naive_random()
