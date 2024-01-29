@@ -176,10 +176,10 @@ def test_swap():
 
 if __name__ == '__main__':
     # pg.init()
-    g = Grid(2,3)
-    print(g)
-    print(g.state)
-    print(g.hashable_state())
+    # g = Grid(2,3)
+    # print(g)
+    # print(g.state)
+    # print(g.hashable_state())
     # g.ui_building()
                     
     # #test_swap()
@@ -189,5 +189,6 @@ if __name__ == '__main__':
     # g1.swap_seq([((0,0),(0,1)),((0,2),(0,1))])
     # print(g1)
     # print(g2)
+    pass
 
 

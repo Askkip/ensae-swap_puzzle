@@ -2,6 +2,9 @@ from grid import Grid
 from graph import Graph
 import copy
 import random
+import sys
+
+#sys.setrecursionlimit(50000)
 
 UP = (-1,0)
 DOWN =(1,0)
@@ -137,7 +140,9 @@ class Solver():
         """
         g = Graph()
 
-        def aux(grid_state):
+        def aux(grid_state,k):
+            if k > 5:
+                return
             self.grid.state = grid_state 
             non_mutable_state = self.grid.hashable_state()
             possibles_moves = self.possible_moves()
@@ -145,10 +150,10 @@ class Solver():
                 self.grid.swap(cell1,cell2) 
                 non_mutable_new_state = self.grid.hashable_state()
                 g.add_edge(non_mutable_state,non_mutable_new_state)
-                aux(g)
+                aux(self.grid.state,k+1)
                 self.grid.swap(cell1,cell2) #put back the changement
                 
-        aux(self.grid.state)
+        aux(self.grid.state,0)
         return g
 
 
