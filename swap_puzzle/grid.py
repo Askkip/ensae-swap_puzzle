@@ -139,6 +139,7 @@ class Grid():
         Create a display of the grid with pygame
 
         """
+        pg.init()
         self.display = pg.display.set_mode((self.n*BLOCK_SIZE,self.m*BLOCK_SIZE))
         self.display.fill(WHITE)
         pg.display.set_caption("Swap Puzzle")

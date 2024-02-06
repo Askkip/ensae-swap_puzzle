@@ -14,7 +14,7 @@ class Test_SolutionBFS(unittest.TestCase):
         with open("input/graph1.path.out", "r") as file:
             for _ in range(190):
                 row = file.readline().strip().split()
-                print(row)
+                #print(row)
                 src,dst,length = int(row[0]),int(row[1]),int(row[2])
                 path = [int(element.removeprefix("[").removesuffix(']').removesuffix(",")) for element in row[3:]]
                 path_to_test = g1.bfs(src,dst)

@@ -4,6 +4,7 @@ import copy
 import random
 import sys
 import numpy as np
+from itertools import permutations
 
 sys.setrecursionlimit(5000)
 
@@ -151,30 +152,81 @@ class Solver():
         return moves
     #Complexité en O(mn^2) et en moyenne en O(mn*max(n,m))
 
+
+    @staticmethod
+    def generate_matrices(n, m):
+        """
+        Return a list of all the possible n x m matrix filled with numbers from 1 to nm
+        Output : list of tuples ; each tuple is a grid
+        Example : [((1,2),(3,4)),((2,1),(3,4)).....]
+        """
+        numbers = [i for i in range(1, n*m + 1)]
+        perms = permutations(numbers, n*m)
+        matrices = []
+
+        for perm in perms:
+            matrix = tuple([tuple(perm[i*m:(i+1)*m]) for i in range(n)])
+            matrices.append(matrix)
+
+        return matrices
+    
+    
+
+    def build_edges(self,g,state):
+        """
+        Connect each state to his neighbours because we firstly built the nodes then now we connect them
+        No output
+        """
+        list_state = [list(t) for t in state]
+        grid = Grid(self.grid.m,self.grid.n,list_state)
+        self.grid = grid
+        l = self.possible_moves()
+        for cell1,cell2 in l :
+            self.grid.swap(cell1,cell2)
+            node = self.grid.hashable_state()
+            g.add_edge(state,node)
+            self.grid.swap(cell1,cell2) #put back the changement
+
+    
     def build_graph(self):
         """
         Build a graph where each node is a state of the grid and there is an edge between 2 nodes
         if and only if u can go from a state to another with a legal swap
         Output : Graph object
+        Side effect : None
         """
-        g = Graph()
-        possibles_moves = self.possible_moves()
-        memory = copy.deepcopy(self.grid.state) #Remember the state for putting back the state of the grid at the end of the function
+        tmp = copy.deepcopy(self.grid.state) #to put back any changement
+        matrices = Solver.generate_matrices(self.grid.m,self.grid.n)
+        g = Graph(matrices)
+        for state in g.nodes:
+            self.build_edges(g,state)
+        self.grid.state = tmp
+        return g
 
-        for swap1,swap2 in possibles_moves :
-            non_mutable_state = self.grid.hashable_state()
-            for cell1,cell2 in possibles_moves:
-                self.grid.swap(cell1,cell2)
-                non_mutable_new_state = self.grid.hashable_state()
-                if (non_mutable_state,non_mutable_new_state) not in g.edges or (non_mutable_new_state,non_mutable_state) not in g.edges: 
-                        g.add_edge(non_mutable_state,non_mutable_new_state)
-                self.grid.swap(cell1,cell2) #put back the changement
+    # def build_graph_nw(self):
+    #     """
+    #     Build a graph where each node is a state of the grid and there is an edge between 2 nodes
+    #     if and only if u can go from a state to another with a legal swap
+    #     Output : Graph object
+    #     """
+    #     g = Graph()
+    #     possibles_moves = self.possible_moves()
+    #     memory = copy.deepcopy(self.grid.state) #Remember the state for putting back the state of the grid at the end of the function
 
-            self.grid.swap(swap1,swap2)
-            non_mutable_state = self.grid.hashable_state()
+    #     for swap1,swap2 in possibles_moves :
+    #         non_mutable_state = self.grid.hashable_state()
+    #         for cell1,cell2 in possibles_moves:
+    #             self.grid.swap(cell1,cell2)
+    #             non_mutable_new_state = self.grid.hashable_state()
+    #             if (non_mutable_state,non_mutable_new_state) not in g.edges or (non_mutable_new_state,non_mutable_state) not in g.edges: 
+    #                     g.add_edge(non_mutable_state,non_mutable_new_state)
+    #             self.grid.swap(cell1,cell2) #put back the changement
+
+    #         self.grid.swap(swap1,swap2)
+    #         non_mutable_state = self.grid.hashable_state()
         
-        self.grid.state = memory
-        return g 
+    #     self.grid.state = memory
+    #     return g 
 
     def get_solution_graphe(self):
         """
@@ -215,11 +267,13 @@ if __name__ == '__main__':
     # g2 = Grid.grid_from_file("input/grid1.in")
     # g3 = Grid.grid_from_file("input/grid2.in")
     solv = Solver(g)
-    #graph = solv.build_graph()
+    graph = solv.build_graph()
+    #print(graph)
+    print(g)
     #print(graph.edges)
-    print(solv.get_solution_graphe())
-    # l=solv.possible_moves()
-    # print(f"moove possible =  {l}")
+    #print(solv.get_solution_graphe())
+    #l=solv.possible_moves()
+    #print(f"moove possible =  {l}")
     # #solv2 = Solver(g2)
     # #solv3=Solver(g3)
     # #l2 = solv2.get_solution_naive_random()
