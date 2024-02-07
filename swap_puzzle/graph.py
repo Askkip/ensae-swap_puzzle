@@ -135,7 +135,6 @@ class Graph:
         return None
 
 
-
     @classmethod
     def graph_from_file(cls, file_name):
         """

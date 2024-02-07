@@ -5,8 +5,18 @@ import random
 import sys
 import numpy as np
 from itertools import permutations
+from queue import Queue
 
-sys.setrecursionlimit(5000)
+def factorielle(n):
+    if n < 0:
+        raise ValueError("Negative value")
+    elif n == 0:
+        return 1
+    else:
+        resultat = [1] * (n + 1)
+        for i in range(2, n + 1):
+            resultat[i] = resultat[i - 1] * i
+    return resultat
 
 UP = (-1,0)
 DOWN =(1,0)
@@ -202,31 +212,9 @@ class Solver():
             self.build_edges(g,state)
         self.grid.state = tmp
         return g
+    #Complexité en O((nm)!)
 
-    # def build_graph_nw(self):
-    #     """
-    #     Build a graph where each node is a state of the grid and there is an edge between 2 nodes
-    #     if and only if u can go from a state to another with a legal swap
-    #     Output : Graph object
-    #     """
-    #     g = Graph()
-    #     possibles_moves = self.possible_moves()
-    #     memory = copy.deepcopy(self.grid.state) #Remember the state for putting back the state of the grid at the end of the function
 
-    #     for swap1,swap2 in possibles_moves :
-    #         non_mutable_state = self.grid.hashable_state()
-    #         for cell1,cell2 in possibles_moves:
-    #             self.grid.swap(cell1,cell2)
-    #             non_mutable_new_state = self.grid.hashable_state()
-    #             if (non_mutable_state,non_mutable_new_state) not in g.edges or (non_mutable_new_state,non_mutable_state) not in g.edges: 
-    #                     g.add_edge(non_mutable_state,non_mutable_new_state)
-    #             self.grid.swap(cell1,cell2) #put back the changement
-
-    #         self.grid.swap(swap1,swap2)
-    #         non_mutable_state = self.grid.hashable_state()
-        
-    #     self.grid.state = memory
-    #     return g 
 
     def get_solution_graphe(self):
         """
@@ -252,6 +240,109 @@ class Solver():
             move_needed = Solver.move_needed(state1,state2)
             path.append(move_needed)
         return path
+    #Complexity is O((mn)!) worst than the naive solution
+
+    @staticmethod
+    def compute_neighbors(graph,state,m,n):
+        """
+        Add the neighbors of elt in the graph
+        Input : 
+        graph = Graph Object
+        state = hashable object
+        Output : NA
+        """
+        list_state = [list(t) for t in state]
+        solver = Solver(Grid(m,n,list_state)) #solver associated with the state of which we want to compute neighbors
+        #print(f"la grille est {solver.grid}")
+        possible_moves = solver.possible_moves()
+        for cell1,cell2 in possible_moves:
+            solver.grid.swap(cell1,cell2)
+            hashable_node = solver.grid.hashable_state()
+            graph.add_edge(hashable_node,state)
+            solver.grid.swap(cell1,cell2)
+
+
+    def bfs_optimized(self, graph,src, dst): 
+        """
+        Finds a shortest path from src to dst by BFS following the solving graph optimized method described
+        in solver.py .  
+
+        Parameters: 
+        -----------
+        graph : Graph object
+            The graph with only 1 node that is the source node.
+        src: NodeType
+            The source node.
+        dst: NodeType
+            The destination node.
+
+        Output: 
+        -------
+        path: list[NodeType] | None
+            The shortest path from src to dst. Returns None if dst is not reachable from src
+        """ 
+        queue = Queue()
+        sup = factorielle(self.grid.m*self.grid.n)[self.grid.m*self.grid.n]
+        seen = [False for _ in range(0,sup)] #way too large
+        distance = [float("inf") for _ in range(0,sup)]
+        predecessors = [-1 for _ in range(0,sup)]
+        #there is a bijection between [0....nb_nodes] and [self.node[0] ... self.nodes[nb_nodes]]
+        #initialization
+
+        distance[graph.nodes.index(src)]  = 0
+        queue.put(src)
+        seen[graph.nodes.index(src)]  = True
+
+        while not queue.empty():
+            elt = queue.get()
+            idx_elt = graph.nodes.index(elt)
+            Solver.compute_neighbors(graph,elt,self.grid.m,self.grid.n) #add the neighbors of elt in the graph
+            for neighbor in graph.graph[elt]:
+                idx_neigh = graph.nodes.index(neighbor)
+                if not seen[idx_neigh] :
+                    queue.put(neighbor)
+                    seen[idx_neigh] = True
+                    distance[idx_neigh] = distance[idx_elt]+1
+                    predecessors[idx_neigh] = elt
+                if neighbor == dst: #BFS assure you that the fisrt time you visit the dst node, is the good one
+                    #Build the path
+                    path = [dst] 
+                    idx_dst = graph.nodes.index(dst)
+                    x = predecessors[idx_dst]
+                    while x != src :
+                        path.append(x)
+                        x = predecessors[graph.nodes.index(x)]
+                    path.append(x)
+                    path.reverse()
+                    return path
+        return None    
+    
+    def get_solution_graphe_optimized(self):
+        """
+        Find the shortest path in the graph which is built gradually
+        Solves the grid and returns the sequence of swaps at the format 
+        [((i1, j1), (i2, j2)), ((i1', j1'), (i2', j2')), ...]. 
+
+        My idea is to modify the BFS, it starts with a graph that only contain the src node 
+        and when it explores a node we build all its neighbours 
+        """
+        src = self.grid.hashable_state()
+        goal = Grid(self.grid.m,self.grid.n)
+        dst = goal.hashable_state()
+        graph = Graph([src])
+        state_path = self.bfs_optimized(graph,src,dst)
+        if state_path == None :
+            return None
+        #we have the list of the different state we need to follow to order the grid
+        #but we want the sequence of swaps, so we are gonna extrat the list of the swap neccessary
+        path = []
+        for i in range(0,len(state_path)-1):
+            state1,state2 = state_path[i],state_path[i+1]
+            move_needed = Solver.move_needed(state1,state2)
+            path.append(move_needed)
+        return path
+
+
 
 
 
@@ -267,9 +358,13 @@ if __name__ == '__main__':
     # g2 = Grid.grid_from_file("input/grid1.in")
     # g3 = Grid.grid_from_file("input/grid2.in")
     solv = Solver(g)
-    graph = solv.build_graph()
-    #print(graph)
+    path = solv.get_solution_graphe_optimized()
+    print(path)
+    g.swap_seq(path)
     print(g)
+    # graph = solv.build_graph()
+    #print(graph)
+    # print(g)
     #print(graph.edges)
     #print(solv.get_solution_graphe())
     #l=solv.possible_moves()
