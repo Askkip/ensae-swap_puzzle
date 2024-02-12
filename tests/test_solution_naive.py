@@ -20,6 +20,7 @@ class Test_SolutionNaive(unittest.TestCase):
         # print(solv1.grid)
         #print(solv2.grid)
         # print(solv3.grid)
+        # print(res3)
         self.assertEqual(grid1.is_sorted(), True)
         self.assertEqual(grid2.is_sorted(), True)
         self.assertEqual(grid3.is_sorted(), True)

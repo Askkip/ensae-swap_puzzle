@@ -173,7 +173,8 @@ class Graph:
                     raise Exception("Format incorrect")
         return graph
     
-    def reconstruct(self,parents,src,dst):
+    @staticmethod
+    def reconstruct(parents,src,dst):
         """
         Reconstruct the shortest path
         """
@@ -197,6 +198,41 @@ class Graph:
                 heappush(heapqueue,(d,elt))
                 return 
         heappush(heapqueue,(d,elt))
+    
+    @staticmethod
+    def h_wrong_place(node):
+        """
+        Heurisitic that count how many number are in a wrong place
+        This heuristic always underestimate the number of swap needed if and only if we substract 1 to the final result, 
+        so we have h(v) <= d(v,src) for all vertex.
+
+        """
+        count = 0
+        m= len(node)
+        n= len(node[0])
+        orderer_grid = [list(range(i*n+1, (i+1)*n+1)) for i in range(m)]  
+        for i,liste in enumerate(node):
+            for j,elt in enumerate(liste):
+                if elt != orderer_grid[i][j]:
+                    count+=1
+        if count == 0 :
+            return 0
+        return count -1
+
+        
+    @staticmethod
+    def manhattan(node):
+        sum = 0
+
+        n = len(node[0])
+        for i,liste in enumerate(node):
+             for j,elt in enumerate(liste):
+                 i_final_expected = (elt-1) // n
+                 j_final_expected = (elt-1) % n
+                 man = abs(i_final_expected - i) + abs(j_final_expected - j)
+                 sum += man
+        return sum
+                 
 
 
     def a_star(self,src,dst,h=(lambda x : 0)):
@@ -228,7 +264,7 @@ class Graph:
             # print(f"prio q apres le pop {prio_queue}")
             # print(f"{node} et {dst} sont == non?")
             if node == dst :
-                node_path = self.reconstruct(parents,src,dst)
+                node_path = Graph.reconstruct(parents,src,dst)
                 return node_path
             for neighbour in self.graph[node]:
                 d = dist[node] + 1 # p(node->neighbour) = 1 because our graph is not ponderated
@@ -245,21 +281,24 @@ class Graph:
 
     
 if __name__ == '__main__':
-    #g = Graph([((1, 2), (3, 4)), ((1, 2), (4, 3)), ((1, 3), (2, 4)), ((1, 3), (4, 2)), ((1, 4), (2, 3)), ((1, 4), (3, 2)), ((2, 1), (3, 4)), ((2, 1), (4, 3)), ((2, 3), (1, 4)), ((2, 3), (4, 1)), ((2, 4), (1, 3)), ((2, 4), (3, 1)), ((3, 1), (2, 4)), ((3, 1), (4, 2)), ((3, 2), (1, 4)), ((3, 2), (4, 1)), ((3, 4), (1, 2)), ((3, 4), (2, 1)), ((4, 1), (2, 3)), ((4, 1), (3, 2)), ((4, 2), (1, 3)), ((4, 2), (3, 1)), ((4, 3), (1, 2)), ((4, 3), (2, 1))])
-    #print(g)
-    g = Graph()
-    g.add_edge(6,5)
-    g.add_edge(6,5)
-    g.add_edge(6,1)
-    g.add_edge(5,1)
-    g.add_edge(1,10)
-    g.add_edge(11,10)
+    g = Graph([((1, 2), (3, 4)), ((1, 2), (4, 3)), ((1, 3), (2, 4)), ((1, 3), (4, 2)), ((1, 4), (2, 3)), ((1, 4), (3, 2)), ((2, 1), (3, 4)), ((2, 1), (4, 3)), ((2, 3), (1, 4)), ((2, 3), (4, 1)), ((2, 4), (1, 3)), ((2, 4), (3, 1)), ((3, 1), (2, 4)), ((3, 1), (4, 2)), ((3, 2), (1, 4)), ((3, 2), (4, 1)), ((3, 4), (1, 2)), ((3, 4), (2, 1)), ((4, 1), (2, 3)), ((4, 1), (3, 2)), ((4, 2), (1, 3)), ((4, 2), (3, 1)), ((4, 3), (1, 2)), ((4, 3), (2, 1))])
     print(g)
+    print(g.nodes[3])
+    print(Graph.h_wrong_place(g.nodes[3]))
+    # g = Graph()
+    # g.add_edge(6,5)
+    # g.add_edge(6,5)
+    # g.add_edge(6,1)
+    # g.add_edge(5,1)
+    # g.add_edge(1,10)
+    # g.add_edge(11,10)
+    # print(g)
     # print(g.graph)
     # print(g.nodes)
     # print(g.edges)
-    print(g.bfs(6,11))
-    print(g.a_star(6,11))
+    # print(g.bfs(6,11))
+    # print(g.a_star(6,11))
+
     
 
 

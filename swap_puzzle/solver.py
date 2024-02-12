@@ -6,6 +6,15 @@ import sys
 import numpy as np
 from itertools import permutations
 from queue import Queue
+from heapq import *
+
+class dict_default_modified(dict):
+    """
+    Create a dict where if there is a missing key we return inf.
+    It's used to implement dist
+    """
+    def __missing__(self, key):
+        return float("inf")
 
 def factorielle(n):
     if n < 0:
@@ -247,7 +256,7 @@ class Solver():
         """
         Add the neighbors of elt in the graph
         Input : 
-        graph = Graph Object
+        graph = Graph Object ; 
         state = hashable object
         Output : NA
         """
@@ -264,8 +273,9 @@ class Solver():
 
     def bfs_optimized(self, graph,src, dst): 
         """
-        Finds a shortest path from src to dst by BFS following the solving graph optimized method described
-        in solver.py .  
+        Finds a shortest path from src to dst by BFS following the solving graph optimized method.
+        My idea is to modify the BFS, it starts with a graph that only contain the src node 
+        and when it explores a node we build all its neighbours   
 
         Parameters: 
         -----------
@@ -283,7 +293,7 @@ class Solver():
         """ 
         queue = Queue()
         sup = factorielle(self.grid.m*self.grid.n)[self.grid.m*self.grid.n]
-        seen = [False for _ in range(0,sup)] #way too large
+        seen = [False for _ in range(0,sup)] #way too large, I could replace it by a dict TODO
         distance = [float("inf") for _ in range(0,sup)]
         predecessors = [-1 for _ in range(0,sup)]
         #there is a bijection between [0....nb_nodes] and [self.node[0] ... self.nodes[nb_nodes]]
@@ -317,7 +327,7 @@ class Solver():
                     return path
         return None    
     
-    def get_solution_graphe_optimized(self):
+    def get_solution_graphe_optimized(self,Graph.h_wrong_place ):
         """
         Find the shortest path in the graph which is built gradually
         Solves the grid and returns the sequence of swaps at the format 
@@ -331,6 +341,71 @@ class Solver():
         dst = goal.hashable_state()
         graph = Graph([src])
         state_path = self.bfs_optimized(graph,src,dst)
+        if state_path == None :
+            return None
+        #we have the list of the different state we need to follow to order the grid
+        #but we want the sequence of swaps, so we are gonna extrat the list of the swap neccessary
+        path = []
+        for i in range(0,len(state_path)-1):
+            state1,state2 = state_path[i],state_path[i+1]
+            move_needed = Solver.move_needed(state1,state2)
+            path.append(move_needed)
+        return path
+    
+
+    
+    def a_star_opimized(self,graph,src,dst,h=(lambda x : 0)):
+        """
+        Finds a shortest path from src to dst by A* by building the graph gradually.
+        My idea is to modify the A* function, it starts with a graph that only contain the src node 
+        and when it explores a node we build all its neighbours   
+
+        Parameters: 
+        -----------
+        graph : Graph object
+            The graph with only 1 node that is the source node.
+        src: NodeType
+            The source node.
+        dst: NodeType
+            The destination node.
+
+        Output: 
+        -------
+        path: list[NodeType] | None
+            The shortest path from src to dst. Returns None if dst is not reachable from src
+        """ 
+        prio_queue = []
+        dist = dict_default_modified({}) #dist[v] = the actual shortest distance btw src and v 
+        dist[src] = 0
+        parents = {}
+        heappush(prio_queue,(h(src),src))
+
+        while len(prio_queue) != 0:
+            heur, node = heappop(prio_queue)
+            Solver.compute_neighbors(graph,node,self.grid.m,self.grid.n) #add the neighbors of elt in the graph
+            if node == dst :
+                node_path = Graph.reconstruct(parents,src,dst)
+                return node_path
+            for neighbour in graph.graph[node]:
+                d = dist[node] + 1 # p(node->neighbour) = 1 because our graph is not ponderated
+                if d < dist[neighbour]:
+                    dist[neighbour] = d
+                    parents[neighbour] = node
+                    Graph.decrease_or_push(prio_queue,neighbour,d+h(neighbour))
+        return None    
+    
+
+    def get_solution_graphe_a_star(self):
+        """
+        Find the shortest path with A* in the graph which is built gradually
+        Solves the grid and returns the sequence of swaps at the format 
+        Output : [((i1, j1), (i2, j2)), ((i1', j1'), (i2', j2')), ...]. 
+        """
+        src = self.grid.hashable_state()
+        goal = Grid(self.grid.m,self.grid.n)
+        dst = goal.hashable_state()
+        graph = Graph([src])
+        state_path = self.a_star_opimized(graph,src,dst)
         if state_path == None :
             return None
         #we have the list of the different state we need to follow to order the grid
@@ -358,7 +433,7 @@ if __name__ == '__main__':
     # g2 = Grid.grid_from_file("input/grid1.in")
     # g3 = Grid.grid_from_file("input/grid2.in")
     solv = Solver(g)
-    path = solv.get_solution_graphe_optimized()
+    path = solv.get_solution_graphe_a_star()
     print(path)
     g.swap_seq(path)
     print(g)
