@@ -13,8 +13,8 @@ class dict_default_modified(dict):
     Create a dict where if there is a missing key we return inf.
     It's used to implement dist
     """
-    def __missing__(self, key):
-        return float("inf")
+    def __missing__(self, key, value_by_default = float("inf")):
+        return value_by_default
 
 def factorielle(n):
     if n < 0:
@@ -90,12 +90,9 @@ class Solver():
         for i in range(0,self.grid.m):
             for j in range(0,self.grid.n):
                 x = (i,j)
-                #print(x)
                 move_close_to_x = [Solver.sum_term_tuple(x,y) for y in directions]
-                #print(move_close_to_x)
                 for t in move_close_to_x:
                     if self.legal_move(x,t) and (t,x) not in possible_moves:
-                        #print(f"On append {(x,t)}")
                         possible_moves.append((x,t))
         return possible_moves
 
@@ -126,20 +123,19 @@ class Solver():
         right_place = Solver.find_place(grid_ordered.state,x)
         actual_place = Solver.find_place(self.grid.state,x)
         moves_done =[]
-        i_a,j_a = actual_place
-        i_r,j_r = right_place
-        moves_to_do =[]
-        if i_a>i_r:
-            moves_to_do.append(UP)
-        if i_a<i_r:
-            moves_to_do.append(DOWN)
-        if j_a<j_r:
-            moves_to_do.append(RIGHT)
-        if j_a>j_r:
-            moves_to_do.append(LEFT)
-
-        
+     
         while actual_place != right_place :
+            i_a,j_a = actual_place
+            i_r,j_r = right_place
+            moves_to_do =[]
+            if i_a>i_r:
+                moves_to_do.append(UP)
+            if i_a<i_r:
+                moves_to_do.append(DOWN)
+            if j_a<j_r:
+                moves_to_do.append(RIGHT)
+            if j_a>j_r:
+                moves_to_do.append(LEFT)
             idx = 0 #keep it between 0 and len(moves_to_do)
             next_place = Solver.sum_term_tuple(actual_place,moves_to_do[idx])
             i,j = next_place
@@ -151,6 +147,7 @@ class Solver():
             self.grid.swap(actual_place,next_place)
             moves_done.append((actual_place,next_place))
             actual_place = next_place
+            
 
         return moves_done
     #Complexité de cette fonction en O(mn) car au pire des cas mn opérations en 0(1) même si en pratique c'est beaucoup moins ça serait plus max(n,m) opérations en moyenne
@@ -166,7 +163,6 @@ class Solver():
         moves =[]
         max_number = self.grid.n*self.grid.m
         for i in range(1,max_number+1):
-            #print(f"on move {i} à sa bonne place ")
             moves = moves + self.place(i)
         return moves
     #Complexité en O(mn^2) et en moyenne en O(mn*max(n,m))
@@ -230,15 +226,13 @@ class Solver():
         Find the shortest path in the state graph built previously
         Solves the grid and returns the sequence of swaps at the format 
         [((i1, j1), (i2, j2)), ((i1', j1'), (i2', j2')), ...]. 
+
         """
-        #print(self.grid)
         g = self.build_graph()
         src = self.grid.hashable_state()
-        #print(src)
         goal = Grid(self.grid.m,self.grid.n)
         dst = goal.hashable_state()
         state_path = g.bfs(src,dst)
-        #print(f"state_path = {state_path}") 
         if state_path == None :
             return None
         #we have the list of the different state we need to follow to order the grid
@@ -248,6 +242,7 @@ class Solver():
             state1,state2 = state_path[i],state_path[i+1]
             move_needed = Solver.move_needed(state1,state2)
             path.append(move_needed)
+        
         return path
     #Complexity is O((mn)!) worst than the naive solution
 
@@ -262,7 +257,6 @@ class Solver():
         """
         list_state = [list(t) for t in state]
         solver = Solver(Grid(m,n,list_state)) #solver associated with the state of which we want to compute neighbors
-        #print(f"la grille est {solver.grid}")
         possible_moves = solver.possible_moves()
         for cell1,cell2 in possible_moves:
             solver.grid.swap(cell1,cell2)
@@ -327,7 +321,7 @@ class Solver():
                     return path
         return None    
     
-    def get_solution_graphe_optimized(self,Graph.h_wrong_place ):
+    def get_solution_graphe_optimized(self):
         """
         Find the shortest path in the graph which is built gradually
         Solves the grid and returns the sequence of swaps at the format 
@@ -335,6 +329,8 @@ class Solver():
 
         My idea is to modify the BFS, it starts with a graph that only contain the src node 
         and when it explores a node we build all its neighbours 
+
+        Side effect : Solve the grid
         """
         src = self.grid.hashable_state()
         goal = Grid(self.grid.m,self.grid.n)
@@ -350,11 +346,12 @@ class Solver():
             state1,state2 = state_path[i],state_path[i+1]
             move_needed = Solver.move_needed(state1,state2)
             path.append(move_needed)
+        self.grid.swap_seq(path)
         return path
     
 
     
-    def a_star_opimized(self,graph,src,dst,h=(lambda x : 0)):
+    def a_star_opimized(self,graph,src,dst,h):
         """
         Finds a shortest path from src to dst by A* by building the graph gradually.
         My idea is to modify the A* function, it starts with a graph that only contain the src node 
@@ -368,6 +365,7 @@ class Solver():
             The source node.
         dst: NodeType
             The destination node.
+        h : The heuristic function (NodeType -> int)
 
         Output: 
         -------
@@ -395,17 +393,19 @@ class Solver():
         return None    
     
 
-    def get_solution_graphe_a_star(self):
+    def get_solution_graphe_a_star(self,h=(lambda x : 0)):
         """
         Find the shortest path with A* in the graph which is built gradually
         Solves the grid and returns the sequence of swaps at the format 
         Output : [((i1, j1), (i2, j2)), ((i1', j1'), (i2', j2')), ...]. 
+
+        Side effect : Solve the grid
         """
         src = self.grid.hashable_state()
         goal = Grid(self.grid.m,self.grid.n)
         dst = goal.hashable_state()
         graph = Graph([src])
-        state_path = self.a_star_opimized(graph,src,dst)
+        state_path = self.a_star_opimized(graph,src,dst,h)
         if state_path == None :
             return None
         #we have the list of the different state we need to follow to order the grid
@@ -415,6 +415,7 @@ class Solver():
             state1,state2 = state_path[i],state_path[i+1]
             move_needed = Solver.move_needed(state1,state2)
             path.append(move_needed)
+        self.grid.swap_seq(path)
         return path
 
 

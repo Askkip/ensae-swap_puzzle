@@ -11,6 +11,10 @@ BLOCK_SIZE = 200
 BLACK = (0,0,0)
 WHITE = (255, 255, 255)
 
+def shuffle_along_axis(x,axis):
+    idx = np.random.rand(*x.shape).argsort(axis=axis)
+    return np.take_along_axis(x,idx,axis=axis)
+
 class Grid():
     """
     A class representing the grid from the swap puzzle. It supports rectangular grids. 
@@ -161,19 +165,28 @@ class Grid():
                 if event.type == pg.QUIT:
                     exit()
 
+    @staticmethod
+    def build_controlled_difficulty_grid(m,n,difficulty):
+        """
+        Input : 
+            - m : number of rows
+            - n : number of columns
+            - difficulty (int) between 1 and 3
+        Output : 
+            Grid Object
+            A Grid Object with an initial state depending the difficulty we want
+        """
+        g = Grid(m,n)
+        if difficulty == 1 : #shuffle only one row
+            np.random.shuffle(g.state[random.randint(0,m-1)])
+        if difficulty == 2 : #shuffle all rows but not columns
+            for i in range(0,m):
+                np.random.shuffle(g.state[i])
+        if difficulty == 3 : #shuffle all the matrix 
+            g.state = shuffle_along_axis(np.array(g.state),0)
+            g.state = shuffle_along_axis(np.array(g.state),1)
 
-
-def test_swap():
-    g = Grid(2,3)
-    print(g)
-    g.swap((0,0),(0,1))
-    print(g)
-    g.swap((0,2),(0,1))
-    print(g)
-    #g.swap((0,3),(0,1))#not permitted
-    g1 = Grid(2,3)
-    g1.swap_seq([((0,0),(0,1)),((0,2),(0,1))])
-    assert(np.array_equal(g1.state,g.state))
+        return g
 
 if __name__ == '__main__':
     # pg.init()
@@ -190,6 +203,10 @@ if __name__ == '__main__':
     # g1.swap_seq([((0,0),(0,1)),((0,2),(0,1))])
     # print(g1)
     # print(g2)
+    g = Grid.build_controlled_difficulty_grid(10,10,1)
+    h = Grid.build_controlled_difficulty_grid(10,10,2)
+    i = Grid.build_controlled_difficulty_grid(10,10,3)
+    print(g,h,i)
     pass
 
 

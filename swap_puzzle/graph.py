@@ -259,24 +259,19 @@ class Graph:
         heappush(prio_queue,(h(src),src))
 
         while len(prio_queue) != 0:
-            # print(f"prio q avant le pop {prio_queue}")
             heur, node = heappop(prio_queue)
-            # print(f"prio q apres le pop {prio_queue}")
-            # print(f"{node} et {dst} sont == non?")
+
             if node == dst :
                 node_path = Graph.reconstruct(parents,src,dst)
                 return node_path
             for neighbour in self.graph[node]:
                 d = dist[node] + 1 # p(node->neighbour) = 1 because our graph is not ponderated
-                # print(f"neighbour = {neighbour}")
-                # print(f" d = {d} et dist.. = {dist[neighbour]}")
                 if d < dist[neighbour]:
                     dist[neighbour] = d
                     parents[neighbour] = node
-                    # print(f"prio q avant {prio_queue}")
                     Graph.decrease_or_push(prio_queue,neighbour,d+h(neighbour))
-                    # print(f"prio q apres {prio_queue}")
         return None
+    
                     
 
     
