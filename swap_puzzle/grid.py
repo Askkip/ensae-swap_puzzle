@@ -152,11 +152,9 @@ class Grid():
             for x in list:
                 left = self.state.index(list)*BLOCK_SIZE
                 top = list.index(x)*BLOCK_SIZE
-                #print(f"On place {x} dans le carré de top {top} et left {left}")
                 pg.draw.rect(self.display,BLACK,pg.Rect(top,left,BLOCK_SIZE,BLOCK_SIZE),5) 
                 mid_top = top + (BLOCK_SIZE)/2
                 mid_left = left +(BLOCK_SIZE)/2
-                #print(f"On place {x} dans mid_top {mid_top} et mid_left {mid_left}")
                 text = font.render(str(x),True, BLACK)
                 self.display.blit(text,(mid_top,mid_left))
         pg.display.flip()
@@ -189,24 +187,6 @@ class Grid():
         return g
 
 if __name__ == '__main__':
-    # pg.init()
-    # g = Grid(2,3)
-    # print(g)
-    # print(g.state)
-    # print(g.hashable_state())
-    # g.ui_building()
-                    
-    # #test_swap()
-    # g1 = Grid(2,3)
-    # g2 = Grid(2,3)
-    # g2.state = g1.state
-    # g1.swap_seq([((0,0),(0,1)),((0,2),(0,1))])
-    # print(g1)
-    # print(g2)
-    g = Grid.build_controlled_difficulty_grid(10,10,1)
-    h = Grid.build_controlled_difficulty_grid(10,10,2)
-    i = Grid.build_controlled_difficulty_grid(10,10,3)
-    print(g,h,i)
     pass
 
 
