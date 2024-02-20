@@ -35,17 +35,25 @@ directions = [UP,DOWN,RIGHT,LEFT]
 
 class Solver(): 
     """
+    Input : 
+        grid : Grid object
+        forbiden_moves : list of tuples by default []
+                        example : [((1,1),(2,1)),((0,0),(1,0))]
     We decided that each solver has his initial grid 
     """
-    def __init__(self,grid) -> None:
+    def __init__(self,grid,forbiden_moves=[]) -> None:
         self.grid = grid
+        self.forbiden_moves = forbiden_moves
 
 
     
     def legal_move(self,x,y):
         i1,j1 = x
         i2,j2 =y
-        return 0<=i1<self.grid.m and 0<=j1<self.grid.n and 0<=i2<self.grid.m and 0<=j2<self.grid.n and ((i1==i2 and abs(j2-j1)==1) or (j1==j2 and abs(i2-i1)==1))
+        not_forbiden = True
+        if (x,y) in self.forbiden_moves or (y,x) in self.forbiden_moves:
+            not_forbiden = False
+        return 0<=i1<self.grid.m and 0<=j1<self.grid.n and 0<=i2<self.grid.m and 0<=j2<self.grid.n and ((i1==i2 and abs(j2-j1)==1) or (j1==j2 and abs(i2-i1)==1)) and not_forbiden 
     
     @staticmethod
     def sum_term_tuple(x,y):
@@ -60,7 +68,7 @@ class Solver():
         return None
     
     @staticmethod
-    def move_needed(state1,state2):
+    def move_needed(state1,state2,forbiden_moves=[]):
         """
         Giving 2 grid that differs from one swap, find the swap they have in common
         """
@@ -68,7 +76,7 @@ class Solver():
         state2l = [list(inner_tuple) for inner_tuple in state2]
         g1 = Grid(len(state1),len(state1[0]),state1l)
         g2 = Grid(len(state2),len(state2[0]),state2l)
-        solv = Solver(g1)
+        solv = Solver(g1,forbiden_moves)
         possible_moves = solv.possible_moves()
         for cell1,cell2 in possible_moves:
             g1.swap(cell1,cell2)
@@ -92,7 +100,7 @@ class Solver():
                 x = (i,j)
                 move_close_to_x = [Solver.sum_term_tuple(x,y) for y in directions]
                 for t in move_close_to_x:
-                    if self.legal_move(x,t) and (t,x) not in possible_moves:
+                    if self.legal_move(x,t) and (t,x) not in possible_moves and (t,x) not in self.forbiden_moves :
                         possible_moves.append((x,t))
         return possible_moves
 
@@ -247,7 +255,7 @@ class Solver():
     #Complexity is O((mn)!) worst than the naive solution
 
     @staticmethod
-    def compute_neighbors(graph,state,m,n):
+    def compute_neighbors(graph,state,m,n,forbiden_moves=[]):
         """
         Add the neighbors of elt in the graph
         Input : 
@@ -256,7 +264,7 @@ class Solver():
         Output : NA
         """
         list_state = [list(t) for t in state]
-        solver = Solver(Grid(m,n,list_state)) #solver associated with the state of which we want to compute neighbors
+        solver = Solver(Grid(m,n,list_state),forbiden_moves) #solver associated with the state of which we want to compute neighbors
         possible_moves = solver.possible_moves()
         for cell1,cell2 in possible_moves:
             solver.grid.swap(cell1,cell2)
@@ -300,7 +308,7 @@ class Solver():
         while not queue.empty():
             elt = queue.get()
             idx_elt = graph.nodes.index(elt)
-            Solver.compute_neighbors(graph,elt,self.grid.m,self.grid.n) #add the neighbors of elt in the graph
+            Solver.compute_neighbors(graph,elt,self.grid.m,self.grid.n,self.forbiden_moves) #add the neighbors of elt in the graph
             for neighbor in graph.graph[elt]:
                 idx_neigh = graph.nodes.index(neighbor)
                 if not seen[idx_neigh] :
@@ -380,7 +388,7 @@ class Solver():
 
         while len(prio_queue) != 0:
             heur, node = heappop(prio_queue)
-            Solver.compute_neighbors(graph,node,self.grid.m,self.grid.n) #add the neighbors of elt in the graph
+            Solver.compute_neighbors(graph,node,self.grid.m,self.grid.n,self.forbiden_moves) #add the neighbors of elt in the graph
             if node == dst :
                 node_path = Graph.reconstruct(parents,src,dst)
                 return node_path
