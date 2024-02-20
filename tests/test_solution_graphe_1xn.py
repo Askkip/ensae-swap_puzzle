@@ -12,12 +12,11 @@ from graph import Graph
 
 class Test_SolutionGrapheAstar(unittest.TestCase):
     def test_solution_graphe(self):
-        grid0 = Grid.grid_from_file("input/grid0.in")
-        grid1 = Grid.grid_from_file("input/grid1.in")
-        grid2= Grid.grid_from_file("input/grid2.in")
-        grid3= Grid.grid_from_file("input/grid3.in")
-        grid4= Grid.grid_from_file("input/grid4.in")
-        #grid3= Grid.build_controlled_difficulty_grid(4,4,2)
+        grid0 = Grid.build_controlled_difficulty_grid(1,70,2)
+        grid1 = Grid.build_controlled_difficulty_grid(1,70,2)
+        grid2= Grid.build_controlled_difficulty_grid(1,70,2)
+        grid4= Grid.build_controlled_difficulty_grid(1,70,2)
+        grid3= Grid.build_controlled_difficulty_grid(1,100,2)
         solv0= Solver(grid0)
         solv1= Solver(grid1)
         solv2 = Solver(grid2)
@@ -32,7 +31,7 @@ class Test_SolutionGrapheAstar(unittest.TestCase):
         self.assertEqual(grid1.is_sorted(), True)
         self.assertEqual(grid2.is_sorted(), True)
         self.assertEqual(grid3.is_sorted(), True)
-        #self.assertEqual(grid4.is_sorted(), True)
+        self.assertEqual(grid4.is_sorted(), True)
 
 if __name__ == '__main__':
     unittest.main()

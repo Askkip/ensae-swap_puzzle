@@ -236,6 +236,8 @@ class Solver():
         [((i1, j1), (i2, j2)), ((i1', j1'), (i2', j2')), ...]. 
 
         """
+        if self.grid.m == 1:
+            return self.get_solution_1xn_case()
         g = self.build_graph()
         src = self.grid.hashable_state()
         goal = Grid(self.grid.m,self.grid.n)
@@ -340,6 +342,8 @@ class Solver():
 
         Side effect : Solve the grid
         """
+        if self.grid.m == 1:
+            return self.get_solution_1xn_case()
         src = self.grid.hashable_state()
         goal = Grid(self.grid.m,self.grid.n)
         dst = goal.hashable_state()
@@ -409,6 +413,8 @@ class Solver():
 
         Side effect : Solve the grid
         """
+        if self.grid.m == 1:
+            return self.get_solution_1xn_case()
         src = self.grid.hashable_state()
         goal = Grid(self.grid.m,self.grid.n)
         dst = goal.hashable_state()
@@ -425,14 +431,42 @@ class Solver():
             path.append(move_needed)
         self.grid.swap_seq(path)
         return path
+    
+    def get_solution_1xn_case(self):
+        """
+        We use an insertion sort because our grid is a list and the insertion sort is the 
+        sort algorithm with the smallest amount of swaps
+        
+        Side effect : Solve the grid
+        Output : Swaps made to solve the grid
+                    example : [((0,0),(0,2)),((0,1),(0,3)),..]
+        """
+        assert(self.grid.m == 1)
+        liste = self.grid.state[0]
+        swap = []  
+    
+        for i in range(1, len(liste)):
+            element_courant = liste[i]
+            j = i - 1
+            while j >= 0 and liste[j] > element_courant:
+                liste[j + 1] = liste[j]
+                swap.append(((0,j),(0,j + 1)))  
+                j -= 1
+            liste[j + 1] = element_courant
+
+        return swap
 
 
 
 
 
 if __name__ == '__main__':
-    pass
-
+    g = Grid.build_controlled_difficulty_grid(1,10,2)
+    print(g.state)
+    s = Solver(g)
+    swap = s.get_solution_1xn_case()
+    print(swap)
+    print(g.state)
 
 
 
