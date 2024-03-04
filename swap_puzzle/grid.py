@@ -187,7 +187,6 @@ class Grid():
         return g
 
 if __name__ == '__main__':
-    g = Grid.build_controlled_difficulty_grid(1,100,3)
-    print(g.state)
+    pass
 
 

@@ -10,7 +10,7 @@ from copy import deepcopy
 
 
 
-class Test_SolutionGrapheAstar(unittest.TestCase):
+class Test_SolutionGraphe1xn(unittest.TestCase):
     def test_solution_graphe(self):
         grid0 = Grid.build_controlled_difficulty_grid(1,70,2)
         cgrid0 = Grid(1,70,deepcopy(grid0.state)) 
@@ -41,7 +41,7 @@ class Test_SolutionGrapheAstar(unittest.TestCase):
         self.assertEqual(grid2.is_sorted(), True)
         self.assertEqual(grid3.is_sorted(), True)
         self.assertEqual(grid4.is_sorted(), True)
-        
+
         self.assertEqual(len(cres0), len(res0))
         self.assertEqual(len(cres1), len(res1))
 

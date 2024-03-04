@@ -14,7 +14,6 @@ class Test_SolutionGrapheOptimized(unittest.TestCase):
         grid1 = Grid.grid_from_file("input/grid1.in")
         grid2= Grid.grid_from_file("input/grid2.in")
         grid3= Grid.grid_from_file("input/grid0.in")
-        #Take too much time for grid3
         solv1= Solver(grid1)
         solv2 = Solver(grid2)
         solv3=Solver(grid3)

@@ -461,12 +461,7 @@ class Solver():
 
 
 if __name__ == '__main__':
-    g = Grid.build_controlled_difficulty_grid(1,10,2)
-    print(g.state)
-    s = Solver(g)
-    swap = s.get_solution_1xn_case()
-    print(swap)
-    print(g.state)
+    pass
 
 
 
