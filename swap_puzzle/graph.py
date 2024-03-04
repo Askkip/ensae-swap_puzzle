@@ -186,6 +186,7 @@ class Graph:
         path.append(src)
         path.reverse()
         return path
+    #O(len(parents))
 
     @staticmethod
     def decrease_or_push(heapqueue,elt,d):
@@ -217,7 +218,7 @@ class Graph:
                     count+=1
         if count == 0 :
             return 0
-        return count -1
+        return (count -1)
 
         
     @staticmethod

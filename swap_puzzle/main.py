@@ -14,6 +14,8 @@ from test_bfs import Test_SolutionBFS as Test6
 from test_solution_graphe_A_star_with_forbiden_moves import Test_SolutionGrapheAstarForbidenMoves as Test7
 from test_swap import Test_Swap as Test8
 from test_grid_from_file import Test_GridLoading as Test9
+from test_solution_graphe_A_star_man import Test_SolutionGrapheAstarMan as Test10
+
 def main():
     # Créez une suite de tests
     suite = unittest.TestSuite()
@@ -28,6 +30,7 @@ def main():
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(Test7))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(Test8))
     suite.addTest(unittest.TestLoader().loadTestsFromTestCase(Test9))
+    suite.addTest(unittest.TestLoader().loadTestsFromTestCase(Test10))
     # Exécutez la suite de tests
     runner = unittest.TextTestRunner()
     result = runner.run(suite)

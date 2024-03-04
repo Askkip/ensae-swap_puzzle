@@ -259,7 +259,7 @@ class Solver():
     @staticmethod
     def compute_neighbors(graph,state,m,n,forbiden_moves=[]):
         """
-        Add the neighbors of elt in the graph
+        Add the neighbors of elt(=state) in the graph
         Input : 
         graph = Graph Object ; 
         state = hashable object
