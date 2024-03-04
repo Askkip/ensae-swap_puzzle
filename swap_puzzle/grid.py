@@ -183,10 +183,11 @@ class Grid():
         if difficulty == 3 : #shuffle all the matrix 
             g.state = shuffle_along_axis(np.array(g.state),0)
             g.state = shuffle_along_axis(np.array(g.state),1)
-
+            g.state = g.state.tolist()
         return g
 
 if __name__ == '__main__':
-    pass
+    g = Grid.build_controlled_difficulty_grid(1,100,3)
+    print(g.state)
 
 
