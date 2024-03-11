@@ -48,6 +48,9 @@ class Solver():
 
     
     def legal_move(self,x,y):
+        """
+        Takes 2 positions and return if switching this 2 position is a legal move or not
+        """
         i1,j1 = x
         i2,j2 =y
         not_forbiden = True
@@ -61,11 +64,13 @@ class Solver():
 
     @staticmethod
     def find_place(mat,elt):
+        """Return the position in the mat of elt"""
         for i, rows in enumerate(mat):
             if elt in rows:
                 return i, rows.index(elt)
 
         return None
+    #O(n*m)
     
     @staticmethod
     def move_needed(state1,state2,forbiden_moves=[]):
@@ -158,7 +163,8 @@ class Solver():
             
 
         return moves_done
-    #Complexité de cette fonction en O(mn) car au pire des cas mn opérations en 0(1) même si en pratique c'est beaucoup moins ça serait plus max(n,m) opérations en moyenne
+    #Complexité de cette fonction en O(mn) car au pire des cas mn opérations en 0(1) même si en pratique 
+    # si on optimisait la recherche de la bonne place ça serait beaucoup moins ça serait plus max(n,m) opérations en moyenne
 
             
     def get_solution_naive(self):
@@ -173,7 +179,7 @@ class Solver():
         for i in range(1,max_number+1):
             moves = moves + self.place(i)
         return moves
-    #Complexité en O(mn^2) et en moyenne en O(mn*max(n,m))
+    #Complexité en O(mn^2) et en moyenne après optimisation possible de place en O(mn*max(n,m))
 
 
     @staticmethod
@@ -265,10 +271,10 @@ class Solver():
         state = hashable object
         Output : NA
         """
-        list_state = [list(t) for t in state]
+        list_state = [list(t) for t in state] #O(nm)
         solver = Solver(Grid(m,n,list_state),forbiden_moves) #solver associated with the state of which we want to compute neighbors
-        possible_moves = solver.possible_moves()
-        for cell1,cell2 in possible_moves:
+        possible_moves = solver.possible_moves() #O(nm)
+        for cell1,cell2 in possible_moves: 
             solver.grid.swap(cell1,cell2)
             hashable_node = solver.grid.hashable_state()
             graph.add_edge(hashable_node,state)
